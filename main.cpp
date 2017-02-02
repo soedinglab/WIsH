@@ -9,8 +9,16 @@
 #include <float.h>
 #include <sstream>
 #include "mm.h"
+#include "main.h"
 
-#define VERBOSITY 2
+//#define OPENMP
+
+
+#ifdef OPENMP
+    #include <omp.h>
+#endif
+
+#define VERBOSITY 3
 
 #define BUILD_COMMAND "build"
 #define PREDICT_COMMAND "predict"
@@ -23,12 +31,15 @@ void die(std::string text,std::string complement=std::string())
     
 }
 
-void build(std::string genomeDir, std::string modelDir, unsigned int order, double alpha)
+void build(std::string genomeDir, std::string modelDir, unsigned int order, double alpha, unsigned int threads = 1)
 {
     DIR* dir;
     struct dirent *genomeFile;
     std::vector<std::string> genomeFiles;
     
+    #ifdef OPENMP
+        omp_set_num_threads(threads);
+    #endif
     
     if((dir = opendir(modelDir.c_str())) == NULL)
         die("Cannot open model directory ", modelDir);
@@ -42,6 +53,7 @@ void build(std::string genomeDir, std::string modelDir, unsigned int order, doub
     }
     closedir (dir);
     
+    #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < genomeFiles.size() ; i++)
     {
         mm model(order,alpha,VERBOSITY);
@@ -50,9 +62,6 @@ void build(std::string genomeDir, std::string modelDir, unsigned int order, doub
         model.printParameters();
         if (model.write(modelDir) < 0)
             die("Cannot write to model directory ",modelDir);
-        
-        //mm modelCheck(modelDir + '/' + model.getName() + ".mm");
-        //modelCheck.printParameters();
     }
     
 
@@ -91,15 +100,21 @@ double getPval(std::pair<double,double> param, double ll)
 }
 
 
-void predict(std::string genomeDir, std::string modelDir,std::string resultDir, bool writeLLMatrix=true,bool writeBestPred = false,std::string negFitsFile = std::string(),bool zScores = false)
+void predict(std::string genomeDir, std::string modelDir,std::string resultDir, unsigned int threads = 1, bool writeLLMatrix=true,bool writeBestPred = false,std::string negFitsFile = std::string(),bool zScores = false)
 {
     
     DIR* dir;
     struct dirent *genomeFile,*modelFile;
     std::vector<std::string> genomeFiles,modelFiles, modelNames, genomeNames;
+    std::vector< std::vector<double> > ll;
+    
+    
+    #ifdef OPENMP
+        omp_set_num_threads(threads);
+    #endif
+    
     
     // List files in genome and model dir
-
     if((dir = opendir(resultDir.c_str())) == NULL)
         die("Cannot open result directory ", resultDir);
     closedir(dir);
@@ -122,34 +137,42 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         
     while ((modelFile = readdir (dir)) != NULL) {
         if (std::string(modelFile->d_name) != "." && std::string(modelFile->d_name) != "..")
+        {
             modelFiles.push_back(std::string(modelFile->d_name));
+            ll.push_back(std::vector<double>());
+        }
     }
     closedir (dir);
     
     
+    std::vector<std::vector<std::string> > bactGenomes;
+    
+    for (size_t j = 0 ; j < genomeFiles.size() ; j++) {
+        bactGenomes.push_back(mm::readGenome(genomeDir + "/" + genomeFiles[j]));
+    }
+    
     // Compute log-likelihoods
-    std::vector< std::vector<double> > ll;
+    #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < modelFiles.size() ; i++)
     {
         mm model(modelDir + "/" + modelFiles[i],VERBOSITY);
-        
-        model.printParameters();
+    
+        if (VERBOSITY>2)
+            std::cout<<"Processing "<<model.getName()<<std::endl; //model.printParameters();
         
         modelNames.push_back(model.getName());
         
-        ll.push_back(std::vector<double>());
         for (size_t j = 0 ; j < genomeFiles.size() ; j++) {
-            ll[i].push_back(model.evaluate(genomeDir + "/" + genomeFiles[j]));
+            ll[i].push_back(model.evaluate(bactGenomes[j]));
         }
         
     }
     
     
-
-    
     // Normalize the log-likelihood to z-scores
     if(zScores)
     {
+        #pragma omp parallel for schedule(static)
         for (size_t i = 0; i < modelFiles.size() ; i++)
         {
             double mu = mean(ll[i]);
@@ -275,13 +298,14 @@ int main(int argc, char **argv)
     
     
     unsigned int order = 8;
+    unsigned int threads = 1;
     double alpha = 16.0;
     bool bestPred = false;
     bool zScores = false;
     bool printHelp = false;
     
     int option;
-    while ((option = getopt (argc, argv, "g:m:r:c:k:bn:zh")) != -1)
+    while ((option = getopt (argc, argv, "g:m:r:c:k:bn:zha:t:")) != -1)
     {
         switch(option)
         {
@@ -306,6 +330,12 @@ int main(int argc, char **argv)
             case 'k':
                 order = atoi(optarg);
                 break;
+            case 't':
+                threads = atoi(optarg);
+                break;
+            case 'a':
+                alpha = std::stod(optarg);
+                break;
             case 'z':
                 zScores = true;
                 break;
@@ -325,6 +355,8 @@ Usage :" + std::string(argv[0]) + " [options] \n\
 Options:\n\
 \t-c\tCommand to be executed (build or predict)\n\
 \t-k\tOrder for building the Markov chain (default is " + std::to_string(order) +")\n\
+\t-a\tPseudo-count parameter (default is " + std::to_string(alpha) +")\n\
+\t-t\tNumber of threads to be used (default is " + std::to_string(threads) +")\n\n\
 Path specifications:\n\
 \t-g\tSpecifies the genome directory (read access)\n\
 \t-m\tSpecifies the model directory (read/write access)\n\
@@ -339,8 +371,13 @@ Example for predicting hosts:\n\n\
 \t\tWIsH -c predict -g virusGenomesDir -m modelDir -r outputResultDir\n\n";
 
     if (printHelp)
-    {        
+    {   
         std::cout<<helpText;
+        #ifdef OPENMP
+            std::cout<<"OpenMP supported."<<std::endl;
+        #else
+            std::cout<<"Compiled *without* OpenMP support."<<std::endl;
+        #endif
         exit(0);
     }
         
@@ -348,10 +385,10 @@ Example for predicting hosts:\n\n\
     
     if (command == BUILD_COMMAND)
     {
-        build(genomeDir,modelDir,order,alpha);
+        build(genomeDir,modelDir,order,alpha, threads);
     } else if (command == PREDICT_COMMAND)
     {
-        predict(genomeDir,modelDir,resultDir, true, bestPred, negFitFile,zScores);
+        predict(genomeDir,modelDir,resultDir, threads, true, bestPred, negFitFile,zScores);
     } else {
         die(std::string("Bad options.\n") + helpText);
     }
