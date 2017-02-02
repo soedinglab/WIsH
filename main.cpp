@@ -105,7 +105,7 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
     
     DIR* dir;
     struct dirent *genomeFile,*modelFile;
-    std::vector<std::string> genomeFiles,modelFiles, modelNames, genomeNames;
+    std::vector<std::string> genomeFiles,modelFiles, genomeNames;
     std::vector< std::vector<double> > ll;
     
     
@@ -151,6 +151,7 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         bactGenomes.push_back(mm::readGenome(genomeDir + "/" + genomeFiles[j]));
     }
     
+    std::vector<std::string> modelNames(modelFiles.size(),std::string());
     // Compute log-likelihoods
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < modelFiles.size() ; i++)
@@ -160,7 +161,7 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         if (VERBOSITY>2)
             std::cout<<"Processing "<<model.getName()<<std::endl; //model.printParameters();
         
-        modelNames.push_back(model.getName());
+        modelNames[i] = model.getName();
         
         for (size_t j = 0 ; j < genomeFiles.size() ; j++) {
             ll[i].push_back(model.evaluate(bactGenomes[j]));
