@@ -153,13 +153,17 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
     
     std::vector<std::string> modelNames(modelFiles.size(),std::string());
     // Compute log-likelihoods
+    size_t progressCount = 0;
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < modelFiles.size() ; i++)
     {
         mm model(modelDir + "/" + modelFiles[i],VERBOSITY);
     
         if (VERBOSITY>2)
-            std::cout<<"Processing "<<model.getName()<<std::endl; //model.printParameters();
+        {
+            progressCount++;
+            std::cout<<"Processing "<<model.getName()<<" (approx. "<<progressCount<<"/"<<modelFiles.size()<<")"<<std::endl; //model.printParameters();
+        }
         
         modelNames[i] = model.getName();
         
@@ -167,6 +171,83 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
             ll[i].push_back(model.evaluate(bactGenomes[j]));
         }
         
+    }
+    
+    if (writeBestPred)
+    {
+        double maxLL;
+        size_t host = 0;
+        std::map<std::string,std::pair<double, double> > negFits;
+        
+        // If we need to compute a p-value, read the fits from file
+        if (negFitsFile != std::string())
+        {
+            std::ifstream fin(negFitsFile.c_str(), std::ios::in);
+    
+            if (!fin.good())
+                die("Cannot open negative fits file ",negFitsFile);
+            
+            
+            std::string line;
+            
+            while(std::getline(fin,line))
+            {
+                if(!line.empty())
+                {
+                    int secondField = line.find("\t");
+                    if (secondField+1<line.size())
+                    {
+                        int thirdField = line.find("\t",secondField + 1);
+                        if (thirdField+1<line.size())
+                        {
+                            std::string bactName = line.substr(0,secondField);
+                            double mu = std::stod(line.substr(secondField+1,thirdField));
+                            double s = std::stod(line.substr(thirdField+1,line.size()));
+                            negFits[bactName] = std::make_pair(mu,s);
+                        } else {
+                            std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
+                        }
+                    } else {
+                        std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
+                    }
+                    
+                }
+            }
+            fin.close();
+        }
+        
+        
+        
+        std::ofstream fout((resultDir + "/prediction.list").c_str(), std::ios::out);
+        
+        if (!fout.good())
+            die("Cannot open ",resultDir);
+
+        for (size_t j = 0 ; j < genomeNames.size() ; j++)
+        {
+            maxLL = -DBL_MAX;
+            for (size_t i = 0; i < modelNames.size() ; i++)
+            {
+                if (ll[i][j] > maxLL)
+                {
+                    host = i;
+                    maxLL = ll[i][j];
+                }
+            }
+                
+            fout << genomeNames[j] <<'\t'<<modelNames[host]<<'\t'<<ll[host][j];
+            
+            
+            if ( negFits.find(modelNames[host]) != negFits.end() )
+            {
+                fout << '\t' << getPval(negFits[modelNames[host]],ll[host][j]);
+            } else {
+                fout << "\tNA";
+            }
+            
+            fout << std::endl;
+        }
+        fout.close();
     }
     
     
@@ -216,77 +297,6 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         fout.close();
     }
     
-    if (writeBestPred)
-    {
-        double maxLL;
-        size_t host = 0;
-        std::map<std::string,std::pair<double, double> > negFits;
-        
-        // If we need to compute a p-value, read the fits from file
-        if (negFitsFile != std::string())
-        {
-            std::ifstream fin(negFitsFile.c_str(), std::ios::in);
-    
-            if (!fin.good())
-                die("Cannot open negative fits file ",negFitsFile);
-            
-            
-            std::string line;
-            
-            while(std::getline(fin,line))
-            {
-                if(!line.empty())
-                {
-                    int secondField = line.find("\t");
-                    if (secondField+1<line.size())
-                    {
-                        int thirdField = line.find("\t",secondField + 1);
-                        std::string bactName = line.substr(0,secondField);
-                        double mu = std::stod(line.substr(secondField+1,thirdField));
-                        double s = std::stod(line.substr(thirdField+1,line.size()));
-                        negFits[bactName] = std::make_pair(mu,s);
-                    } else {
-                        std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
-                    }
-                    
-                }
-            }
-            fin.close();
-        }
-        
-        
-        
-        std::ofstream fout((resultDir + "/prediction.list").c_str(), std::ios::out);
-        
-        if (!fout.good())
-            die("Cannot open ",resultDir);
-
-        for (size_t j = 0 ; j < genomeNames.size() ; j++)
-        {
-            maxLL = -DBL_MAX;
-            for (size_t i = 0; i < modelNames.size() ; i++)
-            {
-                if (ll[i][j] > maxLL)
-                {
-                    host = i;
-                    maxLL = ll[i][j];
-                }
-            }
-                
-            fout << genomeNames[j] <<'\t'<<modelNames[host]<<'\t'<<ll[host][j];
-            
-            
-            if ( negFits.find(modelNames[host]) != negFits.end() )
-            {
-                fout << '\t' << getPval(negFits[modelNames[host]],ll[host][j]);
-            } else {
-                fout << "\tNA";
-            }
-            
-            fout << std::endl;
-        }
-        fout.close();
-    }
         
 
 }
