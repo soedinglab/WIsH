@@ -48,34 +48,12 @@ int mm::trainOn(std::string genomeFile)
     if ((slashPos = modelName.find_last_of('/'))!= modelName.size())
         modelName = modelName.substr(slashPos+1,modelName.size());
         
-    std::ifstream fin(genomeFile.c_str(), std::ios::in| std::ios::binary);
     
+    std::vector<std::string> genomeChunks = readGenome(genomeFile);
 
-    
-    if (!fin.good())
+    if (!genomeChunks.size())
         return -1;
-    
-    std::vector<std::string> genomeChunks;
-    std::string line;
-    
-    
-    
-    
-    while(std::getline(fin,line))
-    {
         
-
-        if(!line.empty())
-        {
-            if (line[0]=='>')
-            {
-                genomeChunks.push_back(std::string());
-            } else {
-                genomeChunks.back() += mapToAlphabet(line);
-            }
-        }
-    }
-
     for (size_t i = 0 ; i < genomeChunks.size() ; i++)
     {
         countKmers(genomeChunks[i]);
@@ -83,7 +61,7 @@ int mm::trainOn(std::string genomeFile)
     
     computeModelProb();
     
-    fin.close();
+    return 0;
 }
 
 
@@ -112,8 +90,10 @@ std::string mm::mapToAlphabet(std::string seq)
         }
         
     }
-    if (seenUnknown && verbosity>2)
+    
+    /*if (seenUnknown)
         std::cout<< "Warning: there are letters in genome not in {A,T,C,G}."<<std::endl;
+    */
     return res;
 }
 
@@ -219,12 +199,12 @@ int mm::read(std::string modelFile)
     return 0;
 }
 
-double mm::evaluate(std::string genomeFile)
+std::vector<std::string> mm::readGenome(std::string genomeFile)
 {
     std::ifstream fin(genomeFile.c_str(), std::ios::in);
     
     if (!fin.good())
-        return -1;
+        return std::vector<std::string>();
     
     std::vector<std::string> genomeChunks;
     std::string line;
@@ -242,7 +222,11 @@ double mm::evaluate(std::string genomeFile)
         }
     }
     fin.close();
-    
+    return genomeChunks;
+}
+
+double mm::evaluate(std::vector<std::string> genomeChunks)
+{
     double ll = 0;
     size_t length = 0;
     for (size_t i = 0 ; i < genomeChunks.size() ; i++)
@@ -251,7 +235,7 @@ double mm::evaluate(std::string genomeFile)
         for (size_t pos = start; pos<genomeChunks[i].size() ; pos++)
         {
             length++;
-            ll += p[hashKmer(genomeChunks[i].begin() + pos - start)];
+            ll += p[hashKmer(genomeChunks[i].begin() + pos - start)]; // TODO may be optimized by precomputing the hashing
         }
     }
     

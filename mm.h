@@ -34,7 +34,7 @@ class mm
     
     
     size_t hashKmer(std::string::iterator kmer, unsigned int k);
-    std::string mapToAlphabet(std::string seq);
+    static std::string mapToAlphabet(std::string seq);
     void countKmers(std::string genome);
     size_t lastNucl(size_t k);
     
@@ -51,7 +51,8 @@ public:
     
     int write(std::string modelDir);
     int trainOn(std::string genomeFile);
-    double evaluate(std::string gemomeFile);
+    static std::vector<std::string> readGenome(std::string genomeFile);
+    double evaluate(std::vector<std::string>);
 };
 
 #endif // MM_H
