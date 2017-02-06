@@ -217,6 +217,11 @@ std::vector<std::string> mm::readGenome(std::string genomeFile)
             {
                 genomeChunks.push_back(std::string());
             } else {
+                if (!genomeChunks.size())
+                {
+                    std::cout<<"Corrupted Fasta file: "<<genomeFile<<std::endl;
+                    genomeChunks.push_back(std::string());
+                }
                 genomeChunks.back() += mapToAlphabet(line);
             }
         }
