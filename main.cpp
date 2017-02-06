@@ -57,7 +57,8 @@ void build(std::string genomeDir, std::string modelDir, unsigned int order, doub
     for (size_t i = 0; i < genomeFiles.size() ; i++)
     {
         mm model(order,alpha,VERBOSITY);
-        
+        if (VERBOSITY > 2)
+            std::cout << "Processing "<<genomeFiles[i]<<std::endl;
         model.trainOn(genomeFiles[i]);
         model.printParameters();
         if (model.write(modelDir) < 0)
