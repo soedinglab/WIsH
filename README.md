@@ -9,23 +9,24 @@
 
 ### How do I get set up? ###
 
-* Installation:
+#### Installation: ####
 git clone git@bitbucket.org:ClovisG/wish.git
 cd wish
 cmake .
 make
 
 
-* Dependencies
+#### Dependencies ####
 If you want to enjoy the parallelization of WIsH, you should have the OpenMP library installed. WIsH uses C++11.
 
-* Database configuration
+#### Database configuration ####
 
 You need two different directory containing only sequence data in FASTA format. One should contain your potential host genomes (one becteria per FATSA file), the other should contain the viral contigs/genomes (one virus per FATSA file).
 
-* To run a prediction, you should proceed in two steps:
+#### Usage example ####
+To run a prediction, you should proceed in two steps:
 
-1. Create the models from the bacterial genomes stored in prokaryoteGenomesDir:
+1 - Create the models from the bacterial genomes stored in prokaryoteGenomesDir:
 ```
 #!bash
 mkdir modelDir
@@ -33,7 +34,7 @@ mkdir modelDir
 ```
 This will create a model in modelDir for every bectrial genome.
 
-2. Run the prediction on your viral sequences stored in phageContigsDir:
+2 - Run the prediction on your viral sequences stored in phageContigsDir:
 
 ```
 #!bash
@@ -42,15 +43,8 @@ mkdir outputResultDir
 ```
 This will output a file containing a matrix of log-likelihood, and a "summary" file containing for every viral sequence the host corresponding to highest log-likelihood (-b option).
 
-* Deployment instructions
 
-### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+### Troubleshooting - Bug reports ###
 
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+* Please contact clovis.galiez@mpibpc.mpg.de
