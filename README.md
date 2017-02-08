@@ -30,7 +30,7 @@ You need two different directory containing only sequence data in FASTA format. 
 #### Usage example ####
 To run a prediction, you should proceed in two steps:
 
-1 - Create the models from the bacterial genomes stored in prokaryoteGenomesDir:
+1 - Create the models from the bacterial genomes you stored in prokaryoteGenomesDir:
 ```
 #!bash
 mkdir modelDir
@@ -38,7 +38,7 @@ mkdir modelDir
 ```
 This will create a model in modelDir for every bectrial genome.
 
-2 - Run the prediction on your viral sequences stored in phageContigsDir:
+2 - Run the prediction on the viral sequences you stored in phageContigsDir:
 
 ```
 #!bash
