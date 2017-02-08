@@ -361,7 +361,7 @@ int main(int argc, char **argv)
     }
     
     std::string helpText;
-        helpText = "WIsH is a tool for predicting bacterial hosts from phage (meta)genomic data.\n\
+        helpText = "WIsH (v" + std::to_string(WIsH_VERSION_MAJOR) + "." + std::to_string(WIsH_VERSION_MINOR) + ") is a tool for predicting bacterial hosts from phage (meta)genomic data.\n\
 © Clovis Galiez (clovis.galiez@mpibpc.mpg.de)\n\n\
 Usage :" + std::string(argv[0]) + " [options] \n\
 Options:\n\
