@@ -47,6 +47,19 @@ mkdir outputResultDir
 ```
 This will output a file containing a matrix of log-likelihood, and a "summary" file containing for every viral sequence the host corresponding to highest log-likelihood (-b option).
 
+The files can be further analyzed with any text editor or with R:
+
+```
+#!R
+
+ll = read.table("outputResultDir/llikelihood.matrix")
+predictions = read.table("outputResultDir/prediction.list")
+
+# Show the number of viral contigs targeting every potential hosts:
+table(predictions$V2)
+
+```
+
 
 
 ### Troubleshooting - Bug reports ###
