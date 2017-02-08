@@ -4,7 +4,7 @@
 ### What is this repository for? ###
 
 * WIsH can identify bacterial hosts from metagenomic data, keeping good accuracy even on smaller contigs.
-* 1.0
+* version 1.0
 * [Availabity](https://bitbucket.org/ClovisG/wish)
 
 ### How do I get set up? ###
