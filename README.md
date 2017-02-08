@@ -21,7 +21,7 @@ make
 
 
 #### Dependencies ####
-If you want to enjoy the parallelization of WIsH, you should have the **OpenMP** library installed. WIsH uses **C++11**, and needs **cmake 2.6** for a proper installation.
+If you want to enjoy the parallelization of WIsH, you should have the OpenMP library installed. WIsH uses C++11.
 
 #### Database configuration ####
 
