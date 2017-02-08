@@ -23,17 +23,17 @@ If you want to enjoy the parallelization of WIsH, you should have the OpenMP lib
 
 You need two different directory containing only sequence data in FASTA format. One should contain your potential host genomes (one becteria per FATSA file), the other should contain the viral contigs/genomes (one virus per FATSA file).
 
-* How to run tests
-To run a prediction, you should proceed in two steps:
- 1. Create the models from the bacterial genomes stored in prokaryoteGenomesDir:
+* To run a prediction, you should proceed in two steps:
 
+1. Create the models from the bacterial genomes stored in prokaryoteGenomesDir:
 ```
 #!bash
 mkdir modelDir
 ./WIsH -c build -g prokaryoteGenomesDir -m modelDir
 ```
 This will create a model in modelDir for every bectrial genome.
-  2. Run the prediction on your viral sequences stored in phageContigsDir:
+
+2. Run the prediction on your viral sequences stored in phageContigsDir:
 
 ```
 #!bash
