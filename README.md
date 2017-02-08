@@ -10,10 +10,14 @@
 ### How do I get set up? ###
 
 #### Installation: ####
+
+```
+#!bash
 git clone git@bitbucket.org:ClovisG/wish.git
 cd wish
 cmake .
 make
+```
 
 
 #### Dependencies ####
