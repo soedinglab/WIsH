@@ -30,7 +30,7 @@ You need two different directory containing only sequence data in FASTA format. 
 #### Usage example ####
 To run a prediction, you should proceed in two steps:
 
-1 - Create the models from the bacterial genomes you stored in prokaryoteGenomesDir:
+1 - Create the models from the bacterial genomes you stored in FASTA format in prokaryoteGenomesDir:
 ```
 #!bash
 mkdir modelDir
@@ -38,14 +38,14 @@ mkdir modelDir
 ```
 This will create a model in modelDir for every bectrial genome.
 
-2 - Run the prediction on the viral sequences you stored in phageContigsDir:
+2 - Run the prediction on the viral sequences you stored in FASTA format in phageContigsDir:
 
 ```
 #!bash
 mkdir outputResultDir
 ./WIsH -c predict -g phageContigsDir -m modelDir -r outputResultDir -b
 ```
-This will output a file containing a matrix of log-likelihood, and a "summary" file containing for every viral sequence the host corresponding to highest log-likelihood (-b option).
+This will output a file *llikelihood.matrix* containing a matrix of log-likelihood (rows are a bacteria, and columns are a viral contigs), and a "summary" file *prediction.list* containing for every viral sequence the host corresponding to highest log-likelihood (-b option).
 
 The files can be further analyzed with any text editor or with R:
 
@@ -58,6 +58,8 @@ predictions = read.table("outputResultDir/prediction.list")
 # Show the number of viral contigs targeting every potential hosts:
 table(predictions$V2)
 
+# Show the histogram of the log-likelihoods for the best predictions:
+hist(predictions$V3)
 ```
 
 
