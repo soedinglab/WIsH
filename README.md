@@ -1,5 +1,7 @@
 # README #
 
+### LICENSE ###
+WIsH is licensed under the General Public License (see the LICENSE file). Copyright Clovis Galiez (clovis.galiez@mpibpc.mpg.de).
 
 ### What is this repository for? ###
 
