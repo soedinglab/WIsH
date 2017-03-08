@@ -1,4 +1,5 @@
 # README #
+[ ![Build Status](https://travis-ci.org/soedinglab/WIsH.svg?branch=master)](https://travis-ci.org/soedinglab/WIsH)
 
 ### LICENSE ###
 WIsH is licensed under the General Public License (see the LICENSE file). Copyright Clovis Galiez (clovis.galiez@mpibpc.mpg.de).
