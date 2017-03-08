@@ -16,10 +16,8 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 file(GLOB SOURCES "*.cpp")
-configure_file ("main.h.in" "main.h")
-configure_file ("README.md.in" "README.md")
+configure_file ("${CMAKE_SOURCE_DIR}/main.h.in" "${CMAKE_SOURCE_DIR}/main.h")
+configure_file ("${CMAKE_SOURCE_DIR}/README.md.in" "${CMAKE_SOURCE_DIR}/README.md")
 
 
 add_executable(WIsH ${SOURCES})
-
-
