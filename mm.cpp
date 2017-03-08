@@ -182,7 +182,7 @@ int mm::read(std::string modelFile)
         return -1;
         
     fin.seekg(0,fin.end);
-    size_t sizep = fin.tellg() - sizeof(alpha) - sizeof(order);
+    size_t sizep = static_cast<unsigned long>(fin.tellg()) - sizeof(alpha) - sizeof(order);
     
     
     p = std::vector<double>(sizep / sizeof(double));

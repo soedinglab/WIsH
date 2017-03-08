@@ -11,9 +11,6 @@
 #include "mm.h"
 #include "main.h"
 
-//#define OPENMP
-
-
 #ifdef OPENMP
     #include <omp.h>
 #endif
