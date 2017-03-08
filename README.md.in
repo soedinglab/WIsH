@@ -7,16 +7,32 @@ WIsH is licensed under the General Public License (see the LICENSE file). Copyri
 
 * WIsH can identify bacterial hosts from metagenomic data, keeping good accuracy even on smaller contigs.
 * version @WIsH_VERSION_MAJOR@.@WIsH_VERSION_MINOR@
-* [Availabity](https://bitbucket.org/ClovisG/wish)
+* [Availabity](git@github.com:soedinglab/WIsH.git)
 
 ### How do I get set up? ###
 
 #### Installation: ####
 
+##### Linux: #####
 ```
 #!bash
-git clone git@bitbucket.org:ClovisG/wish.git
-cd wish
+git clone git@github.com:soedinglab/WIsH.git
+cd WIsH
+cmake .
+make
+```
+
+##### MacOS #####
+Compiling with OpenMP support on MacOS requires a recent gcc compiler. You can get gcc from [homebrew](https://brew.sh/).
+
+```
+#!bash
+brew install gcc@6
+export CC=gcc-6
+export CXX=g++-6
+
+git clone git@github.com:soedinglab/WIsH.git
+cd WIsH
 cmake .
 make
 ```
@@ -68,4 +84,4 @@ hist(predictions$V3)
 
 ### Troubleshooting - Bug reports ###
 
-* Please contact clovis.galiez@mpibpc.mpg.de
+* Please open a github issue or contact clovis.galiez@mpibpc.mpg.de
