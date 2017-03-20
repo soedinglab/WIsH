@@ -371,6 +371,7 @@ Path specifications:\n\
 \t-m\tSpecifies the model directory (read/write access)\n\
 \t-r\tSpecifies the result directory (write access)\n\n\
 Score options:\n\
+\t-b\tOutputs a file containing for each viral sequence the host with highest likelihood\n\
 \t-z\tNormalize the matrix of log-likelihood as z-scores\n\
 \t-n\tSpecifies the parameters for the distribution of negative values of each model\n\
 \t\t\tFormat should be: modelName<Tab>mean<Tab>standardDeviation\n\n\
