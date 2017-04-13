@@ -14,6 +14,19 @@ WIsH is licensed under the General Public License (see the LICENSE file). Copyri
 
 #### Installation: ####
 
+##### Docker: #####
+Build the docker container:
+```
+#!bash
+cd /path/to/repository/of/WiSH
+docker build -t wish .
+```
+
+To run WIsH from the container:
+```
+docker run -v /some/host/folder:/data wish <some WiSH commands>
+```
+
 ##### Linux: #####
 ```
 #!bash

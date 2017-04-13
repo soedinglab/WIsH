@@ -220,7 +220,8 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         
         if (!fout.good())
             die("Cannot open ",resultDir);
-
+        fout << "\"Phage\"\t\"Best hit among provided hosts\"\t\"LogLikelihood\"\t\"p-value if null parameters provided\"\n";
+        
         for (size_t j = 0 ; j < genomeNames.size() ; j++)
         {
             maxLL = -DBL_MAX;
