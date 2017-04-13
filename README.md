@@ -30,7 +30,7 @@ docker run -v /some/host/folder:/data wish <some WiSH commands>
 ##### Linux: #####
 ```
 #!bash
-git clone git clone https://github.com/soedinglab/WIsH.git
+git clone https://github.com/soedinglab/WIsH.git
 cd WIsH
 cmake .
 make
@@ -45,7 +45,7 @@ brew install gcc@6
 export CC=gcc-6
 export CXX=g++-6
 
-git clone git clone https://github.com/soedinglab/WIsH.git
+git clone https://github.com/soedinglab/WIsH.git
 cd WIsH
 cmake .
 make
