@@ -6,9 +6,9 @@ RUN apt-get install -y\
 	cmake\
 	make
 
-RUN mkdir -p /WiSH/build /data
+RUN mkdir -p /WiSH/ /data
 COPY CMakeLists.txt *.h *.cpp *.in *.md *.tsv benchmark /WiSH/
-RUN cd /WiSH/build && cmake .. && make
+RUN cd /WiSH/ && cmake . && make
 
 WORKDIR /data
-ENTRYPOINT ["/WiSH/build/WIsH"]
+ENTRYPOINT ["/WiSH/WIsH"]
