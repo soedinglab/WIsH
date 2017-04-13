@@ -9,7 +9,7 @@ WIsH is licensed under the General Public License (see the LICENSE file). Copyri
 * WIsH can identify bacterial hosts from metagenomic data, keeping good accuracy even on smaller contigs.
 * version 1.0
 * [Availabity](git@github.com:soedinglab/WIsH.git)
-
+ 
 ### How do I get set up? ###
 
 #### Installation: ####
@@ -30,7 +30,7 @@ docker run -v /some/host/folder:/data wish <some WiSH commands>
 ##### Linux: #####
 ```
 #!bash
-git clone git@github.com:soedinglab/WIsH.git
+git clone git clone https://github.com/soedinglab/WIsH.git
 cd WIsH
 cmake .
 make
@@ -45,7 +45,7 @@ brew install gcc@6
 export CC=gcc-6
 export CXX=g++-6
 
-git clone git@github.com:soedinglab/WIsH.git
+git clone git clone https://github.com/soedinglab/WIsH.git
 cd WIsH
 cmake .
 make
