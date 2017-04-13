@@ -9,7 +9,7 @@ WIsH is licensed under the General Public License (see the LICENSE file). Copyri
 * WIsH can identify bacterial hosts from metagenomic data, keeping good accuracy even on smaller contigs.
 * version @WIsH_VERSION_MAJOR@.@WIsH_VERSION_MINOR@
 * [Availabity](git@github.com:soedinglab/WIsH.git)
-
+ 
 ### How do I get set up? ###
 
 #### Installation: ####
