@@ -7,6 +7,7 @@
 #include <map>
 #include <cmath>
 #include <float.h>
+#include <algorithm>
 #include <sstream>
 #include "mm.h"
 #include "main.h"
@@ -212,6 +213,8 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
                 }
             }
             fin.close();
+        } else {
+            negFitsFile = "negFits.csv";
         }
         
         
@@ -221,6 +224,8 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         if (!fout.good())
             die("Cannot open ",resultDir);
         fout << "\"Phage\"\t\"Best hit among provided hosts\"\t\"LogLikelihood\"\t\"p-value if null parameters provided\"\n";
+        
+        std::vector<std::string> predictionWithoutFit;
         
         for (size_t j = 0 ; j < genomeNames.size() ; j++)
         {
@@ -241,12 +246,34 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
             {
                 fout << '\t' << getPval(negFits[modelNames[host]],ll[host][j]);
             } else {
+                predictionWithoutFit.push_back(modelNames[host]);
                 fout << "\tNA";
             }
             
             fout << std::endl;
         }
         fout.close();
+        
+        if (predictionWithoutFit.size())
+        {
+            std::cout<<"WARNING: ";
+            std::sort(predictionWithoutFit.begin(),predictionWithoutFit.end());
+            std::vector<std::string>::iterator it = std::unique(predictionWithoutFit.begin(),predictionWithoutFit.end());
+            predictionWithoutFit.resize( std::distance(predictionWithoutFit.begin(),it) );
+            for ( it = predictionWithoutFit.begin() ; it!=predictionWithoutFit.end() ; it++ )
+                std::cout<<*it<<",";
+            std::cout<<" do(es) not have null-model parameters, and their p-value calculation will be missing in the prediction.list file.\n\nHere is the procedure to fit those parameters:\n\
+            \n\n\
+The parameters for their null-distribution can be computed this way:\n\
+- build models with WIsH for each of the listed genomes that miss the null-parameters,\n\
+- run the WIsH prediction of the models against a large set of various phages,\n\
+- for every model M, fit (e.g. using maximum likelihood) a normal distribution over the scores of M (in the likelihood.matrix file) obtained on phage genomes that are known not to infect the same genus as M,\n\
+- for every model M, add a line to the file " + negFitsFile + " with the following format:\n\
+M<TAB>Mean<TAB>StandardDeviation\n\
+\n\
+To get the p-values associated to a prediction, you can then run the prediction with the options -b -n " + negFitsFile + "\n\
+when running a prediction.\n";
+        }
     }
     
     
