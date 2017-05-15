@@ -1,0 +1,6 @@
+KeggGenomes.lst:
+	KEGG Identifiers of prokaryotic genomes used in the WIsH benchmark
+PhageSequences.lst:
+	NCBI identifiers of phage genomes used in the WIsH benchmark
+host-phage-ref.tsv:
+	Matrix of genomes identifiers corresponding to known host-phage interaction at genus level.
