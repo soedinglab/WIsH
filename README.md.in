@@ -4,6 +4,9 @@
 ### LICENSE ###
 WIsH is licensed under the General Public License (see the LICENSE file). Copyright Clovis Galiez (clovis.galiez@mpibpc.mpg.de).
 
+<p align="center"><img src="https://raw.githubusercontent.com/soedinglab/WIsH/master/WIsHAlpha0Bg.png" height="256" /></p>
+
+
 ### What is this repository for? ###
 
 * WIsH can identify bacterial hosts from metagenomic data, keeping good accuracy even on smaller contigs.
