@@ -56,7 +56,7 @@ make
 
 
 #### Dependencies ####
-If you want to enjoy the parallelization of WIsH, you should have the OpenMP library installed. WIsH uses C++11.
+If you want to enjoy the parallelization of WIsH, you should have the OpenMP library installed. WIsH uses C++11. The model construction and the interaction prediction are both parallelized. In both cases, it spreads one bacterial genome/model per thread as soon as you give WIsH the number N of threads to use (with the parameter "-t N").
 
 #### Database configuration ####
 
@@ -97,6 +97,9 @@ table(predictions$V2)
 hist(predictions$V3)
 ```
 
+#### Getting the null paramters for new bacterial models ####
+If you want to get p-values for your predictions, you need to know the null parameters for a new bacterial model. To get them, you must run the predictions on a large set of phage genomes that are know *not* to infect your bacterial model (let's call it the null set of phages) and use the prediction likelihood to fit the null-model parameters. You can use the script computeNullParameters.R that takes the predictions on this null set of phage and create a file containing the null parameters for every bacterial model.
+To get the p-values while predicting interactions, please specify the options "-b -n nullParameters.tsv" in a prediction call.
 
 
 ### Troubleshooting - Bug reports ###
