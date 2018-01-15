@@ -99,7 +99,7 @@ double getPval(std::pair<double,double> param, double ll)
 }
 
 
-void predict(std::string genomeDir, std::string modelDir,std::string resultDir, unsigned int threads = 1, bool writeLLMatrix=true,bool writeBestPred = false,std::string negFitsFile = std::string(),bool zScores = false)
+void predict(std::string genomeDir, std::string modelDir,std::string resultDir, unsigned int threads = 1, bool writeLLMatrix=true,bool writeBestPred = false,std::string negFitsFile = std::string(),bool zScores = false,bool writePvalMatrix=false)
 {
     
     DIR* dir;
@@ -144,6 +144,49 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
     closedir (dir);
     
     
+    std::map<std::string,std::pair<double, double> > negFits;
+    std::vector<std::string> predictionWithoutFit;
+    
+    // If we need to compute a p-value, read the fits from file
+    if (negFitsFile != std::string())
+    {
+        std::ifstream fin(negFitsFile.c_str(), std::ios::in);
+
+        if (!fin.good())
+            die("Cannot open negative fits file ",negFitsFile);
+        
+        
+        std::string line;
+        
+        while(std::getline(fin,line))
+        {
+            if(!line.empty())
+            {
+                int secondField = line.find("\t");
+                if (secondField+1<line.size())
+                {
+                    int thirdField = line.find("\t",secondField + 1);
+                    if (thirdField+1<line.size())
+                    {
+                        std::string bactName = line.substr(0,secondField);
+                        double mu = std::stod(line.substr(secondField+1,thirdField));
+                        double s = std::stod(line.substr(thirdField+1,line.size()));
+                        negFits[bactName] = std::make_pair(mu,s);
+                    } else {
+                        std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
+                    }
+                } else {
+                    std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
+                }
+                
+            }
+        }
+        fin.close();
+    } else {
+        negFitsFile = "negFits.csv";
+    }
+    
+    
     std::vector<std::vector<std::string> > bactGenomes;
     
     for (size_t j = 0 ; j < genomeFiles.size() ; j++) {
@@ -176,56 +219,13 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
     {
         double maxLL;
         size_t host = 0;
-        std::map<std::string,std::pair<double, double> > negFits;
-        
-        // If we need to compute a p-value, read the fits from file
-        if (negFitsFile != std::string())
-        {
-            std::ifstream fin(negFitsFile.c_str(), std::ios::in);
-    
-            if (!fin.good())
-                die("Cannot open negative fits file ",negFitsFile);
-            
-            
-            std::string line;
-            
-            while(std::getline(fin,line))
-            {
-                if(!line.empty())
-                {
-                    int secondField = line.find("\t");
-                    if (secondField+1<line.size())
-                    {
-                        int thirdField = line.find("\t",secondField + 1);
-                        if (thirdField+1<line.size())
-                        {
-                            std::string bactName = line.substr(0,secondField);
-                            double mu = std::stod(line.substr(secondField+1,thirdField));
-                            double s = std::stod(line.substr(thirdField+1,line.size()));
-                            negFits[bactName] = std::make_pair(mu,s);
-                        } else {
-                            std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
-                        }
-                    } else {
-                        std::cout << "Warning: "<< negFitsFile <<" is missformatted. Should be [bactName]\\t[mu]\\t[standard deviation]"<<std::endl;
-                    }
-                    
-                }
-            }
-            fin.close();
-        } else {
-            negFitsFile = "negFits.csv";
-        }
-        
-        
-        
+
         std::ofstream fout((resultDir + "/prediction.list").c_str(), std::ios::out);
         
         if (!fout.good())
             die("Cannot open ",resultDir);
         fout << "\"Phage\"\t\"Best hit among provided hosts\"\t\"LogLikelihood\"\t\"p-value if null parameters provided\"\n";
         
-        std::vector<std::string> predictionWithoutFit;
         
         for (size_t j = 0 ; j < genomeNames.size() ; j++)
         {
@@ -254,26 +254,6 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         }
         fout.close();
         
-        if (predictionWithoutFit.size())
-        {
-            std::cout<<"WARNING: ";
-            std::sort(predictionWithoutFit.begin(),predictionWithoutFit.end());
-            std::vector<std::string>::iterator it = std::unique(predictionWithoutFit.begin(),predictionWithoutFit.end());
-            predictionWithoutFit.resize( std::distance(predictionWithoutFit.begin(),it) );
-            for ( it = predictionWithoutFit.begin() ; it!=predictionWithoutFit.end() ; it++ )
-                std::cout<<*it<<",";
-            std::cout<<" do(es) not have null-model parameters, and their p-value calculation will be missing in the prediction.list file.\n\nHere is the procedure to fit those parameters:\n\
-            \n\n\
-The parameters for their null-distribution can be computed this way:\n\
-- build models with WIsH for each of the listed genomes that miss the null-parameters,\n\
-- run the WIsH prediction of the models against a large set of various phages,\n\
-- for every model M, fit (e.g. using maximum likelihood) a normal distribution over the scores of M (in the likelihood.matrix file) obtained on phage genomes that are known not to infect the same genus as M,\n\
-- for every model M, add a line to the file " + negFitsFile + " with the following format:\n\
-M<TAB>Mean<TAB>StandardDeviation\n\
-\n\
-To get the p-values associated to a prediction, you can then run the prediction with the options -b -n " + negFitsFile + "\n\
-when running a prediction.\n";
-        }
     }
     
     
@@ -321,10 +301,76 @@ when running a prediction.\n";
             
         }
         fout.close();
+    }    
+    
+    // Output all p-values according to user choice
+    if (writePvalMatrix)  {
+        std::ofstream fout((resultDir + "/pvalues.matrix").c_str(), std::ios::out);
+        
+        if (!fout.good())
+            die("Cannot open ",resultDir);
+
+        if (genomeNames.size())
+            fout<<genomeNames[0];
+        for (size_t j = 1 ; j < genomeNames.size() ; j++)
+        {
+            fout << '\t'<< genomeNames[j];
+        }
+        fout << std::endl;
+        
+        for (size_t i = 0; i < modelNames.size() ; i++)
+        {
+            bool hasNegFit;
+            std::pair<double, double> negFit;
+            
+            fout << modelNames[i];
+            
+            
+            if ( negFits.find(modelNames[i]) != negFits.end() )
+            {
+                hasNegFit = true;
+                negFit = negFits[modelNames[i]];
+            } else {
+                hasNegFit = false;
+                predictionWithoutFit.push_back(modelNames[i]);
+            }
+            
+            for (size_t j = 0 ; j < genomeNames.size() ; j++)
+            {
+                if(hasNegFit)
+                {
+                    fout << '\t' << getPval(negFit,ll[i][j]);
+                } else {
+                    fout << "\tNA";
+                }
+            }
+            fout << std::endl;
+            
+        }
+        fout.close();
     }
     
-        
-
+    if (predictionWithoutFit.size())
+    {
+        std::cout<<"WARNING: ";
+        std::sort(predictionWithoutFit.begin(),predictionWithoutFit.end());
+        std::vector<std::string>::iterator it = std::unique(predictionWithoutFit.begin(),predictionWithoutFit.end());
+        predictionWithoutFit.resize( std::distance(predictionWithoutFit.begin(),it) );
+        for ( it = predictionWithoutFit.begin() ; it!=predictionWithoutFit.end() ; it++ )
+            std::cout<<*it<<",";
+        std::cout<<" do(es) not have null-model parameters, and their p-value calculation will be missing in the prediction.list file.\n\nHere is the procedure to fit those parameters:\n\
+        \n\n\
+The parameters for their null-distribution can be computed this way:\n\
+- build models with WIsH for each of the listed genomes that miss the null-parameters,\n\
+- run the WIsH prediction of the models against a large set of various phages,\n\
+- for every model M, fit (e.g. using maximum likelihood) a normal distribution over the scores of M (in the likelihood.matrix file) obtained on phage genomes that are known not to infect the same genus as M,\n\
+- for every model M, add a line to the file " + negFitsFile + " with the following format:\n\
+M<TAB>Mean<TAB>StandardDeviation\n\
+\n\
+To get the p-values associated to a prediction, you can then run the prediction with the options -b -n " + negFitsFile + "\n\
+when running a prediction.\n";
+    }
+    
 }
 
 
@@ -340,9 +386,10 @@ int main(int argc, char **argv)
     bool bestPred = false;
     bool zScores = false;
     bool printHelp = false;
+    bool writePvalMatrix = false;
     
     int option;
-    while ((option = getopt (argc, argv, "g:m:r:c:k:bn:zha:t:")) != -1)
+    while ((option = getopt (argc, argv, "g:m:r:c:k:bn:pzha:t:")) != -1)
     {
         switch(option)
         {
@@ -376,6 +423,9 @@ int main(int argc, char **argv)
             case 'z':
                 zScores = true;
                 break;
+            case 'p':
+                writePvalMatrix = true;
+                break;
             case 'h':
                 printHelp = true;
                 break;
@@ -400,6 +450,7 @@ Path specifications:\n\
 \t-r\tSpecifies the result directory (write access)\n\n\
 Score options:\n\
 \t-b\tOutputs a file containing for each viral sequence the host with highest likelihood\n\
+\t-p\tOutputs a matrix of p-values for every prediction (slows down the predictions)\n\
 \t-z\tNormalize the matrix of log-likelihood as z-scores\n\
 \t-n\tSpecifies the parameters for the distribution of negative values of each model\n\
 \t\t\tFormat should be: modelName<Tab>mean<Tab>standardDeviation\n\n\
@@ -426,7 +477,7 @@ Example for predicting hosts:\n\n\
         build(genomeDir,modelDir,order,alpha, threads);
     } else if (command == PREDICT_COMMAND)
     {
-        predict(genomeDir,modelDir,resultDir, threads, true, bestPred, negFitFile,zScores);
+        predict(genomeDir,modelDir,resultDir, threads, true, bestPred, negFitFile,zScores,writePvalMatrix);
     } else {
         die(std::string("Bad options.\n") + helpText);
     }
