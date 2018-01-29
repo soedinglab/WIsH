@@ -98,9 +98,22 @@ hist(predictions$V3)
 ```
 
 #### Getting the null paramters for new bacterial models ####
-If you want to get p-values for your predictions, you need to know the null parameters for a new bacterial model. To get them, you must run the predictions on a large set of phage genomes that are know *not* to infect your bacterial model (let's call it the null set of phages) and use the prediction likelihood to fit the null-model parameters. You can use the script computeNullParameters.R that takes the predictions on this null set of phage and create a file containing the null parameters for every bacterial model.
-To get the p-values while predicting interactions, please specify the options "-b -n nullParameters.tsv" in a prediction call.
+If you want to get p-values for your predictions, you need to know the null parameters for a new bacterial model. To get them, for each bacterial model, you must run the predictions on a large set of phage genomes that are known *not* to infect your bacterial model (let's call it the null set of phages) and use the prediction likelihood to fit the null-model parameters. We achieved that in our benchmark by simply removing for every bacterial model B all the phages that were known to infect the same genus as B, then running the prediction for every genus G:
+```
+./WIsH -c predict -g setOfPhageContigsNotInfectingGenus_G -m modelsOfGenus_G -r outputNullModelResultDir -b
+```
 
+And then for each genus G, computing the parameters for the associated null-models using the script computeNullParameters.R.
+
+
+However, a simpler but less accurate method can be used to get all the parameters at once or also when lack of the taxonomy of your bacterial models. In that case, you have to collect a set of phage contigs/genomes such that for every bacterial model B_i the size of the set of phages P_i that infects B_i can be neglected compared to the set of phages that does *not* infect B_i. Then you can get the parameters for each model at once by running the prediction:
+
+```
+./WIsH -c predict -g superDiverseSetOfPhageContigs -m newModelsDir -r outputNullModelResultDir -b
+```
+where newModelsDir contains all your bacterial model that are missing their null-model parameters. Then, you can use the script computeNullParameters.R that takes the predictions and create a file containing the null parameters for every bacterial model in newModelsDir.
+
+Afterwards, to get the p-values while predicting interactions, please specify the options "-b -n nullParameters.tsv" in a prediction call.
 
 ### Troubleshooting - Bug reports ###
 
