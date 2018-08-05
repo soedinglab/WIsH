@@ -9,6 +9,7 @@
 #include <float.h>
 #include <algorithm>
 #include <sstream>
+#include <sys/stat.h>
 #include "mm.h"
 #include "main.h"
 
@@ -470,7 +471,18 @@ Example for predicting hosts:\n\n\
         exit(0);
     }
         
-    
+    // Make the modelDir if it does not exist.
+    struct stat st;
+
+    // Check for existence.
+    if (stat(modelDir.c_str(), &st) < 0) {
+        // If not, create the directory.
+        // read/write/search permissions for owner and group.
+        // read/search permissions for others.
+        if (mkdir(modelDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0) {
+          die("Cannot create model directory ", modelDir);
+        }
+    }
     
     if (command == BUILD_COMMAND)
     {
