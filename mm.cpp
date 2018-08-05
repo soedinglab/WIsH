@@ -71,7 +71,7 @@ std::string mm::mapToAlphabet(std::string seq)
     std::string res;
     for (size_t i = 0 ; i < seq.size() ; i++)
     {
-        switch (seq[i]) {
+        switch (toupper(seq[i])) {
             case 'A':
                 res.push_back(0);
                 break;

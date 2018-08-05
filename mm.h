@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
-
+#include <ctype.h>
 
 class mm
 {
