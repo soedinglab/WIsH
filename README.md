@@ -115,6 +115,19 @@ where newModelsDir contains all your bacterial model that are missing their null
 
 Afterwards, to get the p-values while predicting interactions, please specify the options "-b -n nullParameters.tsv" in a prediction call.
 
+#### Tricks ####
+
+When building models, **only one genome should be stored per fasta file**. If you have a big fasta file containing all your genomes, you can split them using the following commands. Supposing the the header is in the format ">recordId|description|...", go to your genome directory and call:
+```
+mkdir -p splittedGenomes
+awk '/^>/ {if(x>0) {close(outname); x=0} match($0, ">([^| ]*)", record);outname=sprintf("splittedGenomes/%s.fa",record[1]); if (x>0) {print >> outname} else {print > outname;} x++; next;} {if(x>0) print >> outname;}' *.fna
+```
+
+The directory *splittedGenomes* now contains one genome per fasta file (with the recordId as file names), and can be used to train your WIsH models:
+```
+./WIsH -c build -g splittedGenomes -m modelDir
+```
+
 ### Troubleshooting - Bug reports ###
 
 * Please open a github issue or contact clovis.galiez@mpibpc.mpg.de
