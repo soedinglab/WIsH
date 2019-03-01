@@ -95,7 +95,37 @@ table(predictions$V2)
 
 # Show the histogram of the log-likelihoods for the best predictions:
 hist(predictions$V3)
+
 ```
+
+3 - Advanced analysis
+
+Finding the lowest common ancestor of the top WIsH predictions provides a more robust estimate of the host taxonomy. First, you can call WIsH to generate a matrix of p-values for each of the predictions:
+```
+./WIsH -c predict -g phageContigsDir -m modelDir -r outputResultDir -b -p -n KeggGaussianFits.tsv
+```
+
+Then in R, get the 5 top best predictions:
+```
+library(dplyr)
+library(tidyr)
+
+pvals = read.table("outputResultDir/pvalues.matrix")
+ll = read.table("outputResultDir/llikelihood.matrix")
+
+# Mask the predictions having a bad p-value:
+ll[pvals > 0.05] <- NA
+
+# Set the model name as a column:
+ll$model = rownames(ll)
+
+# Extract the best 5 predictions:
+topPredictions = as.matrix(ll %>% gather(phage,likelihood,-model) %>% group_by(phage) %>% top_n(5))
+
+```
+
+You can now use tools such as (https://github.com/pmenzel/taxonomy-tools) to perform your LCA analysis.
+
 
 #### Getting the null paramters for new bacterial models ####
 If you want to get p-values for your predictions, you need to know the null parameters for a new bacterial model. To get them, for each bacterial model, you must run the predictions on a large set of phage genomes that are known *not* to infect your bacterial model (let's call it the null set of phages) and use the prediction likelihood to fit the null-model parameters. We achieved that in our benchmark by simply removing for every bacterial model B all the phages that were known to infect the same genus as B, then running the prediction for every genus G:
