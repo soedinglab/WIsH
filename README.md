@@ -158,6 +158,21 @@ The directory *splittedGenomes* now contains one genome per fasta file (with the
 ./WIsH -c build -g splittedGenomes -m modelDir
 ```
 
+
+### Getting the benchmark data ###
+The accession numbers of the sequences used in the benchmark can be found in the benchmark directory of the project.
+
+You can use the NCBI API to get the phage sequences, for instance:
+NC_000896 through (https://www.ncbi.nlm.nih.gov/search/all/?term=NC_000896)
+
+To get the bacterial genomes, you can use the KEGG API, for instance
+aac through (https://www.genome.jp/kegg-bin/show_organism?org=aac)
+
+
+
+
+
+
 ### Troubleshooting - Bug reports ###
 
 * Please open a github issue or contact clovis.galiez@mpibpc.mpg.de
