@@ -129,7 +129,7 @@ You can now use tools such as (https://github.com/pmenzel/taxonomy-tools) to per
 #### Cut-offs ####
 
 The cut-off are highly dependent on your use-case.
-The likelihood value is dependent on the model and the best is to use null dataset to get the parameters of a null-model in order to get p-values [see next section for getting parameters for custom models][Getting the null paramters for new bacterial models]. Then you can refer to the benchmark in the supplementary materials: Figure 1, page 5 gives the p-value cut-offs and their subsequently associated accuracy and recall values.
+The likelihood value is dependent on the model and the best is to use null dataset to get the parameters of a null-model in order to get p-values [see next section for getting parameters for custom models](Getting the null paramters for new bacterial models). Then you can refer to the benchmark in the supplementary materials: Figure 1, page 5 gives the p-value cut-offs and their subsequently associated accuracy and recall values.
 
 In case you only want to get an idea of the usual log-likelihood values, you can check the provided parameter file (computed for Kegg Genomes models) available [here](KeggGaussianFits.tsv). The first column is the mean the second is standard deviation. As to set a cut-off, *the more negative, the better the model fits the sequence*. 
 
