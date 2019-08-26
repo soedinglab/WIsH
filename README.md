@@ -126,6 +126,13 @@ topPredictions = as.matrix(ll %>% gather(phage,likelihood,-model) %>% group_by(p
 
 You can now use tools such as (https://github.com/pmenzel/taxonomy-tools) to perform your LCA analysis.
 
+#### Cut-offs ####
+
+The cut-off are highly dependent on your use-case.
+The likelihood value is dependent on the model and the best is to use null dataset to get the parameters of a null-model in order to get p-values [see next section for getting parameters for custom models][Getting the null paramters for new bacterial models]. Then you can refer to the benchmark in the supplementary materials: Figure 1, page 5 gives the p-value cut-offs and their subsequently associated accuracy and recall values.
+
+In case you only want to get an idea of the usual log-likelihood values, you can check the provided parameter file (computed for Kegg Genomes models) available [here](KeggGaussianFits.tsv). The first column is the mean the second is standard deviation. As to set a cut-off, *the more negative, the better the model fits the sequence*. 
+
 
 #### Getting the null paramters for new bacterial models ####
 If you want to get p-values for your predictions, you need to know the null parameters for a new bacterial model. To get them, for each bacterial model, you must run the predictions on a large set of phage genomes that are known *not* to infect your bacterial model (let's call it the null set of phages) and use the prediction likelihood to fit the null-model parameters. We achieved that in our benchmark by simply removing for every bacterial model B all the phages that were known to infect the same genus as B, then running the prediction for every genus G:
