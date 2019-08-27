@@ -182,4 +182,4 @@ aac through (https://www.genome.jp/kegg-bin/show_organism?org=aac)
 
 ### Troubleshooting - Bug reports ###
 
-* Please open a github issue or contact clovis.galiez@mpibpc.mpg.de
+* Please open a github issue or contact clovis.galiez@univ-grenoble-alpes.fr
