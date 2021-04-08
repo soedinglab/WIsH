@@ -23,6 +23,18 @@
 #define PREDICT_COMMAND "predict"
 
 
+struct prediction{
+	size_t hostIdx;
+	double ll;
+};
+
+struct by_ll {
+    bool operator()(prediction const &a, prediction const &b) {
+        return a.ll > b.ll;
+    }
+};
+
+
 void die(std::string text,std::string complement=std::string())
 {
     std::cout<< "ERROR:" << text << complement << "." <<std::endl;
@@ -100,7 +112,7 @@ double getPval(std::pair<double,double> param, double ll)
 }
 
 
-void predict(std::string genomeDir, std::string modelDir,std::string resultDir, unsigned int threads = 1, bool writeLLMatrix=true,bool writeBestPred = false,std::string negFitsFile = std::string(),bool zScores = false,bool writePvalMatrix=false)
+void predict(std::string genomeDir, std::string modelDir,std::string resultDir, unsigned int threads = 1, bool writeLLMatrix=true,size_t writeBestPred = 0,std::string negFitsFile = std::string(),bool zScores = false,bool writePvalMatrix=false)
 {
     
     DIR* dir;
@@ -217,9 +229,7 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
     }
     
     if (writeBestPred)
-    {
-        double maxLL;
-        size_t host = 0;
+    {       
 
         std::ofstream fout((resultDir + "/prediction.list").c_str(), std::ios::out);
         
@@ -230,28 +240,30 @@ void predict(std::string genomeDir, std::string modelDir,std::string resultDir, 
         
         for (size_t j = 0 ; j < genomeNames.size() ; j++)
         {
-            maxLL = -DBL_MAX;
+	        std::vector<prediction> llToSort;
             for (size_t i = 0; i < modelNames.size() ; i++)
             {
-                if (ll[i][j] > maxLL)
-                {
-                    host = i;
-                    maxLL = ll[i][j];
-                }
+		        llToSort.push_back({i,ll[i][j]});
             }
-                
-            fout << genomeNames[j] <<'\t'<<modelNames[host]<<'\t'<<ll[host][j];
+            std::sort(llToSort.begin(), llToSort.end(), by_ll());
             
-            
-            if ( negFits.find(modelNames[host]) != negFits.end() )
+            size_t nbOfPredToOutput = writeBestPred<modelNames.size() ? writeBestPred:modelNames.size();
+
+            for (size_t k=0;k<nbOfPredToOutput;k++)
             {
-                fout << '\t' << getPval(negFits[modelNames[host]],ll[host][j]);
-            } else {
-                predictionWithoutFit.push_back(modelNames[host]);
-                fout << "\tNA";
-            }
+                size_t host = llToSort[k].hostIdx;
+                fout << genomeNames[j] <<'\t'<<modelNames[host]<<'\t'<<ll[host][j];
             
-            fout << std::endl;
+                if ( negFits.find(modelNames[host]) != negFits.end() )
+                {
+                    fout << '\t' << getPval(negFits[modelNames[host]],ll[host][j]);
+                } else {
+                    predictionWithoutFit.push_back(modelNames[host]);
+                    fout << "\tNA";
+                }
+                fout << std::endl;
+                std::cout<<k<<","<<nbOfPredToOutput<<std::endl;
+            }
         }
         fout.close();
         
@@ -384,13 +396,13 @@ int main(int argc, char **argv)
     unsigned int order = 8;
     unsigned int threads = 1;
     double alpha = 16.0;
-    bool bestPred = false;
+    unsigned int bestPred = 0;
     bool zScores = false;
     bool printHelp = false;
     bool writePvalMatrix = false;
     
     int option;
-    while ((option = getopt (argc, argv, "g:m:r:c:k:bn:pzha:t:")) != -1)
+    while ((option = getopt (argc, argv, "g:m:r:c:k:b:n:pzha:t:")) != -1)
     {
         switch(option)
         {
@@ -410,7 +422,7 @@ int main(int argc, char **argv)
                 negFitFile = optarg;
                 break;
             case 'b':
-                bestPred = true;
+                bestPred = atoi(optarg);
                 break;
             case 'k':
                 order = atoi(optarg);
@@ -438,7 +450,7 @@ int main(int argc, char **argv)
     
     std::string helpText;
         helpText = "WIsH (v" + std::to_string(WIsH_VERSION_MAJOR) + "." + std::to_string(WIsH_VERSION_MINOR) + ") is a tool for predicting bacterial hosts from phage (meta)genomic data.\n\
-© Clovis Galiez (clovis.galiez@mpibpc.mpg.de)\n\n\
+© Clovis Galiez (clovis.galiez@univ-grenoble-alpes.fr)\n\n\
 Usage :" + std::string(argv[0]) + " [options] \n\
 Options:\n\
 \t-c\tCommand to be executed (build or predict)\n\
@@ -450,7 +462,7 @@ Path specifications:\n\
 \t-m\tSpecifies the model directory (read/write access)\n\
 \t-r\tSpecifies the result directory (write access)\n\n\
 Score options:\n\
-\t-b\tOutputs a file containing for each viral sequence the host with highest likelihood\n\
+\t-b\tOutputs a file containing for each viral sequence the host with the b best likelihood\n\
 \t-p\tOutputs a matrix of p-values for every prediction (slows down the predictions)\n\
 \t-z\tNormalize the matrix of log-likelihood as z-scores\n\
 \t-n\tSpecifies the parameters for the distribution of negative values of each model\n\

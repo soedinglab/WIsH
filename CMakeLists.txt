@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (WIsH)
 
 set (WIsH_VERSION_MAJOR 1)
-set (WIsH_VERSION_MINOR 0)
+set (WIsH_VERSION_MINOR 1)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
