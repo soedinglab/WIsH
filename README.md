@@ -30,6 +30,28 @@ To run WIsH from the container:
 docker run -v /some/host/folder:/data wish <some WiSH commands>
 ```
 
+##### Singularity: #####
+Singularity is an alterative to Docker, which is more suited for
+HPC environments.
+
+Build the Singularity container:
+```
+#!bash
+cd /path/to/repository/of/WiSH
+singularity build -f --nv --force $PWD/WIsH.sif $PWD/WIsH.def 
+```
+
+To run the WIsH singularity container interactively: 
+```
+singularity shell WIsH.sif
+```
+
+To run the WIsH singularity container:
+```
+## This expects the [options] from WIsH
+singularity run WIsH.sif [options]
+```
+
 ##### Linux: #####
 ```
 #!bash

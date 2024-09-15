@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: ubuntu:14.04
+Stage: spython-base
+
+%files
+./CMakeLists.txt /WIsH/
+./*.h /WIsH/
+./*.cpp /WIsH/
+./*.in /WIsH/
+./*.md /WIsH/
+./*.tsv /WIsH/
+./benchmark /WIsH/
+
+%post
+"sh" "-c" "echo nameserver 8.8.8.8 >> /etc/resolv.conf"
+apt-get update
+apt-get install -y \
+g++ \
+cmake \
+make
+
+mkdir -p /WIsH/ /data
+cd /WIsH/ && cmake . && make
+
+mkdir -p /data
+cd /data
+
+%environment
+# Add /WIsH to the PATH so that the WIsH binary can be easily executed
+export PATH=/WIsH:$PATH
+
+%runscript
+cd /data
+exec /WIsH/WIsH "$@"
+
+%startscript
+cd /data
+exec /WIsH/WIsH "$@"
