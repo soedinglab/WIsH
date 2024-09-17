@@ -49,7 +49,7 @@ singularity shell WIsH.sif
 To run the WIsH singularity container:
 ```
 ## This expects the [options] from WIsH
-singularity run WIsH.sif [options]
+singularity run --bind /some/host/folder:/data WIsH.sif [options]
 ```
 
 ##### Linux: #####
